@@ -1,18 +1,28 @@
 public class Main {
-    
     public static void main(String[] args) {
-        Notification notification=new Notification(null, null);
-        BankAccount account = new BankAccount(101, "Ravi", 17, 200, "Savings",notification);
-        // Age corrected to 18, balance corrected to 500 — printed by the constructor
+        // Instantiate services
+        BankAccount account = new BankAccount(101, "Alice", 25, 1000.0, "Savings");
+        Database db = new Database(account);
+        Notification email= new Notification(account.getName());
+        StatementGenerator statementGen = new StatementGenerator();
 
-        account.setPin(1234);
+        // Create account
+        
 
-        account.deposit(1000);
-        account.withdraw(500, 1234);
-        account.withdraw(500, 9999); // wrong PIN, should fail
+        // Deposit operation
+        if (account.deposit(500.0)) {
+            email.send_email("Your deposit of Rs. 500.0 was successful. New balance: " + account.getBalance());
+            db.save_to_database();
+        }
 
-        account.printStatement();
+        // Withdraw operation
+        if (account.withdraw(200.0, null)) {
+            email.send_email("Your withdrawal of Rs. 200.0 was successful. New balance: " + account.getBalance());
+            db.save_to_database();
+        }
 
-        System.out.println("Interest earned: Rs. " + account.calculateInterest());
+        // Generate and display statement
+        String statement = statementGen.generate(account);
+        System.out.print(statement);
     }
 }

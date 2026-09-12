@@ -1,14 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * GreenLeaf Bank — Legacy BankAccount class
- *
- * This class is intentionally messy.
- * It mixes account state, validation, persistence, notification,
- * statement formatting, and interest calculation all in one place.
- * Refactor this across by implementing the lab tasks onward.
- */
 public class BankAccount {
 
     private int accountNumber;
@@ -18,14 +10,9 @@ public class BankAccount {
     private String status;
     private Integer pin;
     private String accountType; // "Savings" or "Current"
-    private Notification notification;
-    // Every deposit/withdrawal gets logged here as a plain string —
-    // logging logic is mixed directly into deposit()/withdraw().
     private List<String> transactionLog = new ArrayList<>();
-   
-    public BankAccount(int accountNumber, String name, int age, double balance, String accountType,Notification newNotification) {
 
-        // Validation logic mixed directly into the constructor
+    public BankAccount(int accountNumber, String name, int age, double balance, String accountType) {
         if (age < 18) {
             System.out.println("Age was below 18, correcting to 18");
             age = 18;
@@ -44,15 +31,9 @@ public class BankAccount {
         this.accountType = accountType;
         this.status = "Active";
         this.pin = null;
-        this.notification=new Notification(name, "Email");
     }
 
-    // ----------------------------------------------------
-    // Account operations, tangled with logging + notification
-    // ----------------------------------------------------
-
     public boolean deposit(double amount) {
-
         if (!status.equals("Active")) {
             System.out.println("Account is not active");
             return false;
@@ -64,21 +45,11 @@ public class BankAccount {
         }
 
         balance += amount;
-
-        // Logging responsibility, baked directly into deposit()
         transactionLog.add("DEPOSIT: Rs. " + amount + " | New balance: " + balance);
-
-        // Notification responsibility, baked directly into deposit()
-        notification.send_email("Your deposit of Rs. " + amount + " was successful. New balance: " + balance);
-
-        // Persistence responsibility, baked directly into deposit()
-        saveToDatabase();
-
         return true;
     }
 
     public boolean withdraw(double amount, Integer enteredPin) {
-
         if (!status.equals("Active")) {
             System.out.println("Account is not active");
             return false;
@@ -103,29 +74,19 @@ public class BankAccount {
         }
 
         balance -= amount;
-
         transactionLog.add("WITHDRAW: Rs. " + amount + " | New balance: " + balance);
-
-        notification.send_email( "Your withdrawal of Rs. " + amount + " was successful. New balance: " + balance);
-
-        saveToDatabase();
-
         return true;
     }
 
     public boolean closeAccount() {
         if (status.equals("Inactive")) return false;
         status = "Inactive";
-        notification.send_email( "Your account has been closed.");
-        saveToDatabase();
         return true;
     }
 
     public boolean reopenAccount() {
         if (status.equals("Active")) return false;
         status = "Active";
-        notification.send_email("Your account has been reopened.");
-        saveToDatabase();
         return true;
     }
 
@@ -141,55 +102,7 @@ public class BankAccount {
         return pin != null && pin.equals(enteredPin);
     }
 
-    // ----------------------------------------------------
-    // Interest calculation — an if/else chain baked into the account itself
-    // ----------------------------------------------------
-
-    public double calculateInterest() {
-        if (accountType.equals("Savings")) {
-            return balance * 0.04;
-        } else if (accountType.equals("Current")) {
-            return balance * 0.01;
-        } else {
-            return 0.0;
-        }
-    }
-
-    // ----------------------------------------------------
-    // "Persistence" — pretend database logic living inside the account
-    // ----------------------------------------------------
-
-    private void saveToDatabase() {
-        // Pretend this talks to MySQL. In reality just prints.
-        System.out.println("[DB] Saving account " + accountNumber + " to MySQL...");
-    }
-
-    // ----------------------------------------------------
-    // "Notification" — pretend email logic living inside the account
-    // ----------------------------------------------------
-    
-    // private void sendEmail(String recipient, String message) {
-    //     // Pretend this talks to an SMTP server. In reality just prints.
-    //     System.out.println("[EMAIL] To: " + recipient + " | " + message);
-    // }
-
-    // ----------------------------------------------------
-    // "Statement generation" — formatting logic living inside the account
-    // ----------------------------------------------------
-
-    public void printStatement() {
-        System.out.println("---- Statement for Account #" + accountNumber + " (" + name + ") ----");
-        for (String entry : transactionLog) {
-            System.out.println(entry);
-        }
-        System.out.println("Current Balance: Rs. " + balance);
-        System.out.println("-----------------------------------------------------");
-    }
-
-    // ----------------------------------------------------
     // Getters
-    // ----------------------------------------------------
-
     public int getAccountNumber() { return accountNumber; }
     public String getName() { return name; }
     public int getAge() { return age; }
@@ -197,4 +110,5 @@ public class BankAccount {
     public String getStatus() { return status; }
     public String getAccountType() { return accountType; }
     public boolean hasPin() { return pin != null; }
+    public List<String> getTransactionLog() { return new ArrayList<>(transactionLog); }
 }
